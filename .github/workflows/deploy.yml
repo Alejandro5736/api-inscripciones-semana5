@@ -25,14 +25,18 @@ jobs:
     - name: Build and Package with Maven
       run: ./api-inscripciones/mvnw -B package --file api-inscripciones/pom.xml -DskipTests
 
-    # Autenticación nativa por comandos (elimina intermediarios y limpia caracteres extraños automáticamente)
-    - name: Log in to Docker Hub (Native)
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-    # Construcción y subida de la imagen
-    - name: Build and Push Docker Image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./api-inscripciones
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/api-inscripciones:latest
+    # Bloque nativo ultra-seguro: Desinfecta credenciales, inicia sesión, construye y sube
+    - name: Docker Login, Build and Push
+      run: |
+        # 1. Limpiar a la fuerza cualquier espacio, tabulación o salto de línea invisible
+        CLEAN_USER=$(echo "${{ secrets.DOCKERHUB_USERNAME }}" | tr -d '[:space:]')
+        CLEAN_TOKEN=$(echo "${{ secrets.DOCKERHUB_TOKEN }}" | tr -d '[:space:]')
+        
+        # 2. Autenticación directa
+        echo "$CLEAN_TOKEN" | docker login -u "$CLEAN_USER" --password-stdin
+        
+        # 3. Construcción de la imagen usando el usuario limpio
+        docker build -t "$CLEAN_USER/api-inscripciones:latest" ./api-inscripciones
+        
+        # 4. Subida de la imagen a Docker Hub
+        docker push "$CLEAN_USER/api-inscripciones:latest"
