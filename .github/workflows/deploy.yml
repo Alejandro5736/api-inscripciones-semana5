@@ -24,6 +24,14 @@ jobs:
     - name: Build and Package with Maven
       run: ./api-inscripciones/mvnw -B package --file api-inscripciones/pom.xml -DskipTests
 
+    - name: Verificar si GitHub lee los Secretos (Seguro)
+      env:
+        DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+      run: |
+        echo "Cantidad de caracteres del Usuario: ${#DOCKER_USER}"
+        echo "Cantidad de caracteres del Token: ${#DOCKER_PASS}"
+
     - name: Log in to DockerHub
       shell: bash
       env:
