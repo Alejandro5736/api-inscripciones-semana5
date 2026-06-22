@@ -25,12 +25,13 @@ jobs:
     - name: Build and Package with Maven
       run: ./api-inscripciones/mvnw -B package --file api-inscripciones/pom.xml -DskipTests
 
-    # Login oficial usando la acción nativa de Docker (evita usar echos o pipes en Bash)
+    # Login oficial corrigiendo el bug de la cabecera malformada (malformed HTTP Authorization header)
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+        logout: false
 
     # Construcción y subida nativa utilizando las variables
     - name: Build and Push Docker image
