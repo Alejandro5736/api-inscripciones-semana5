@@ -24,21 +24,17 @@ jobs:
     - name: Build and Package with Maven
       run: ./api-inscripciones/mvnw -B package --file api-inscripciones/pom.xml -DskipTests
 
-    - name: Verificar si GitHub lee los Secretos (Seguro)
-      env:
-        DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
-      run: |
-        echo "Cantidad de caracteres del Usuario: ${#DOCKER_USER}"
-        echo "Cantidad de caracteres del Token: ${#DOCKER_PASS}"
-
     - name: Log in to DockerHub
       shell: bash
       env:
         DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
-        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        # Purgar automáticamente cualquier carácter invisible, \r, \n o espacio del portapapeles
+        CLEAN_USER=$(echo -n "$DOCKER_USER" | tr -d '\r\n ')
+        CLEAN_PASS=$(echo -n "$DOCKER_PASS" | tr -d '\r\n ')
+        
+        printf '%s' "$CLEAN_PASS" | docker login -u "$CLEAN_USER" --password-stdin
 
     - name: Build and Push Docker Image
       uses: docker/build-push-action@v5
