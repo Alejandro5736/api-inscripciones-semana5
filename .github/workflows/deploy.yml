@@ -25,11 +25,13 @@ jobs:
     - name: Build and Package with Maven
       run: ./api-inscripciones/mvnw -B package --file api-inscripciones/pom.xml -DskipTests
 
-    # Login directo usando tubería estándar de Docker
+    # Desinfectar el token de cualquier carácter invisible del navegador antes de enviarlo
     - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      run: |
+        CLEAN_TOKEN=$(echo "${{ secrets.DOCKERHUB_TOKEN }}" | tr -dc 'a-zA-Z0-9_=-')
+        echo "$CLEAN_TOKEN" | docker login -u "admin1009a" --password-stdin
 
     - name: Build and Push Docker image
       run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/api-inscripciones:latest ./api-inscripciones
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/api-inscripciones:latest
+        docker build -t admin1009a/api-inscripciones:latest ./api-inscripciones
+        docker push admin1009a/api-inscripciones:latest
