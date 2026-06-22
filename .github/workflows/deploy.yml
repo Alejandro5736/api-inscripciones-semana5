@@ -9,12 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # Inyectamos los secretos como variables de entorno
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
 
     steps:
-    # 1. Descarga el código del repositorio en el contenedor virtual
     - uses: actions/checkout@v4
 
-    # 2. Configura el entorno virtual con Java 21
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -22,12 +26,10 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    # 3. Dar permisos de ejecución al script mvnw dentro de la subcarpeta
-    # Esto es crítico porque estamos trabajando en una estructura anidada
     - name: Grant execute permission for mvnw
       run: chmod +x api-inscripciones/mvnw
 
-    # 4. Compila el proyecto apuntando específicamente al pom.xml interno
-    # Usamos la bandera --file para decirle a Maven exactamente dónde está el archivo de configuración
+    # Al ejecutar con estas variables, Spring Boot podrá validar las credenciales 
+    # de S3 durante la fase de testing o compilación si fuera necesario.
     - name: Build and Package with Maven
       run: ./api-inscripciones/mvnw -B package --file api-inscripciones/pom.xml -DskipTests
